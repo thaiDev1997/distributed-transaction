@@ -1,0 +1,57 @@
+services:
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    networks:
+      - distributed-transaction-network
+    restart: on-failure
+    ports:
+      - 8081:8081
+    environment:
+      - DB_URL=jdbc:mysql://database:3306/order
+      - DB_USERNAME=root
+      - DB_PASSWORD=dev
+    depends_on:
+      - database
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    networks:
+      - distributed-transaction-network
+    restart: on-failure
+    ports:
+      - 8082:8082
+    environment:
+      - DB_URL=jdbc:mysql://database:3306/payment
+      - DB_USERNAME=root
+      - DB_PASSWORD=dev
+    depends_on:
+      - database
+  stock-service:
+    build: ./stock-service
+    container_name: stock-service
+    networks:
+      - distributed-transaction-network
+    restart: on-failure
+    ports:
+      - 8083:8083
+    environment:
+      - DB_URL=jdbc:mysql://database:3306/stock
+      - DB_USERNAME=root
+      - DB_PASSWORD=dev
+    depends_on:
+      - database
+  delivery-service:
+    build: ./delivery-service
+    container_name: delivery-service
+    networks:
+      - distributed-transaction-network
+    restart: on-failure
+    ports:
+      - 8084:8084
+    environment:
+      - DB_URL=jdbc:mysql://database:3306/delivery
+      - DB_USERNAME=root
+      - DB_PASSWORD=dev
+    depends_on:
+      - database

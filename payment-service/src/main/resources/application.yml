@@ -1,0 +1,29 @@
+server.port: 8082
+spring:
+  application.name: payment-service
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/payment}?createDatabaseIfNotExist=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:dev}
+    hikari:
+      pool-name: HikariPool
+      auto-commit: false
+      maximumPoolSize: 10
+      minimumIdle: 5
+      connectionTimeout: 30000
+      idleTimeout: 30000
+      maxLifetime: 1800000
+      ## PreparedStatement configuration
+      cache-prep-stmts: true
+      prep-stmt-cache-size: 250
+      prep-stmt-cache-sql-limit: 2048
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        show-sql: true
+        format_sql: true
+        connection:
+          provider_disables_autocommit: true
+    hibernate:
+      ddl-auto: update

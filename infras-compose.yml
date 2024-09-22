@@ -1,0 +1,17 @@
+networks:
+  distributed-transaction-network:
+    driver: bridge
+
+services:
+  database:
+    image: mysql:latest
+    container_name: database
+    networks:
+      - distributed-transaction-network
+    restart: on-failure
+    ports:
+      - 3306:3306
+    volumes:
+      - ./container_vol/database:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=dev
