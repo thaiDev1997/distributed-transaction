@@ -11,6 +11,7 @@ services:
       - DB_URL=jdbc:mysql://database:3306/order
       - DB_USERNAME=root
       - DB_PASSWORD=dev
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:29092,kafka-2:29093
     depends_on:
       - database
   payment-service:
@@ -25,6 +26,7 @@ services:
       - DB_URL=jdbc:mysql://database:3306/payment
       - DB_USERNAME=root
       - DB_PASSWORD=dev
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:29092,kafka-2:29093
     depends_on:
       - database
   stock-service:
@@ -39,6 +41,7 @@ services:
       - DB_URL=jdbc:mysql://database:3306/stock
       - DB_USERNAME=root
       - DB_PASSWORD=dev
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:29092,kafka-2:29093
     depends_on:
       - database
   delivery-service:
@@ -53,5 +56,6 @@ services:
       - DB_URL=jdbc:mysql://database:3306/delivery
       - DB_USERNAME=root
       - DB_PASSWORD=dev
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:29092,kafka-2:29093
     depends_on:
       - database

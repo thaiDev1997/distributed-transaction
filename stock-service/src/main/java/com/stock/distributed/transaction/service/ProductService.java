@@ -1,6 +1,11 @@
 package com.stock.distributed.transaction.service;
 
+import com.common.distributed.transaction.constant.status.StockStatus;
+import com.common.distributed.transaction.dto.RequestOrder;
 import com.stock.distributed.transaction.dto.Stock;
+import com.common.distributed.transaction.dto.event.OrderEvent;
+import com.common.distributed.transaction.dto.event.StockEvent;
+import com.stock.distributed.transaction.entity.OrderProduct;
 import com.stock.distributed.transaction.entity.Product;
 import com.stock.distributed.transaction.repository.OrderProductRepository;
 import com.stock.distributed.transaction.repository.ProductRepository;
@@ -12,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Iterator;
+import java.util.Objects;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
@@ -58,5 +64,40 @@ public class ProductService {
                     .build();
             productRepository.save(i);
         }
+    }
+
+    @Transactional
+    public StockEvent reserveOrderProduct(OrderEvent orderEvent) {
+        RequestOrder requestOrder = orderEvent.getOrder();
+        long productId = requestOrder.getProductId();
+        int orderQuantity = requestOrder.getQuantity();
+        return productRepository.findById(requestOrder.getProductId())
+                .filter(product -> product.getQuantity() > 0 && product.getQuantity() >= orderQuantity)
+                .map(product -> {
+                    product.setQuantity(product.getQuantity() - orderQuantity);
+                    productRepository.save(product);
+                    orderProductRepository.save(OrderProduct.of(requestOrder.getOrderId(), productId, orderQuantity));
+
+                    requestOrder.setAmount(orderQuantity * product.getUnitPrice());
+                    return StockEvent.builder().order(requestOrder).status(StockStatus.RESERVED).build();
+                }).orElse(StockEvent.builder().order(requestOrder).status(StockStatus.FAILED).build());
+    }
+
+    @Transactional
+    public boolean releaseOrderProduct(OrderEvent orderEvent) {
+        RequestOrder order = orderEvent.getOrder();
+        return orderProductRepository.findByOrderId(order.getOrderId())
+                .map(orderProduct -> {
+                    return productRepository
+                            .findById(orderProduct.getProductId())
+                            .map(product -> {
+                                // compensable transaction
+                                product.setQuantity(product.getQuantity() + orderProduct.getQuantity());
+                                productRepository.save(product);
+                                return true;
+                            })
+                            .orElse(false);
+                })
+                .orElse(false);
     }
 }

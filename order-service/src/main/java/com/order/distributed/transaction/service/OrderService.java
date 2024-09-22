@@ -20,7 +20,7 @@ public class OrderService {
     OrderRepository orderRepository;
 
     @Transactional
-    public void createOrder(RequestOrder requestOrder) {
+    public long createOrder(RequestOrder requestOrder) {
         Order order = Order.builder()
                 .userId(requestOrder.getUserId())
                 .productId(requestOrder.getProductId())
@@ -29,8 +29,7 @@ public class OrderService {
                 .paymentStatus(PaymentStatus.PENDING)
                 .build();
         order = orderRepository.saveAndFlush(order);
-
-        requestOrder.setOrderId(order.getId());
+        return order.getId();
     }
 
     @Transactional

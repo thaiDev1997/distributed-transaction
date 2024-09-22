@@ -1,5 +1,11 @@
 package com.payment.distributed.transaction.service;
 
+import com.common.distributed.transaction.constant.status.PaymentStatus;
+import com.common.distributed.transaction.dto.RequestOrder;
+import com.common.distributed.transaction.dto.event.OrderEvent;
+import com.common.distributed.transaction.dto.event.PaymentEvent;
+import com.common.distributed.transaction.dto.event.StockEvent;
+import com.payment.distributed.transaction.entity.Payment;
 import com.payment.distributed.transaction.entity.User;
 import com.payment.distributed.transaction.entity.UserBalance;
 import com.payment.distributed.transaction.repository.PaymentRepository;
@@ -12,6 +18,9 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.Iterator;
+import java.util.Objects;
+
+import org.springframework.transaction.annotation.Transactional;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
@@ -43,5 +52,45 @@ public class PaymentService {
                 }
             }
         }
+    }
+
+    @Transactional
+    public PaymentEvent stockReserved(StockEvent stockEvent) {
+        RequestOrder requestOrder = stockEvent.getOrder();
+        double orderAmount = requestOrder.getAmount();
+        return userBalanceRepository.findByUserId(requestOrder.getUserId())
+                .filter(balance -> balance.getAmount() > 0 && balance.getAmount() >= orderAmount)
+                .map(balance -> {
+                    Payment payment = Payment.of(requestOrder.getUserId(), requestOrder.getOrderId(), orderAmount,
+                            requestOrder.getPaymentMode(), PaymentStatus.PROCESSED);
+                    paymentRepository.save(payment);
+                    balance.setAmount(balance.getAmount() - orderAmount);
+
+                    // assign user's address - phone -> delivery address - phone
+                    User user = balance.getUser();
+                    requestOrder.setAddress(user.getAddress());
+                    requestOrder.setPhone(user.getPhone());
+                    return PaymentEvent.builder().order(requestOrder).status(PaymentStatus.PROCESSED).build();
+                })
+                .orElse(PaymentEvent.builder().order(requestOrder).status(PaymentStatus.FAILED).build());
+    }
+
+    @Transactional
+    public boolean refundPayment(OrderEvent orderEvent) {
+        RequestOrder order = orderEvent.getOrder();
+        return paymentRepository
+                .findByOrderId(order.getOrderId())
+                .filter(payment -> PaymentStatus.PROCESSED.equals(payment.getStatus()))
+                .map(payment -> {
+                    payment.setStatus(PaymentStatus.REFUNDED);
+                    return userBalanceRepository
+                            .findByUserId(payment.getUserId())
+                            .map(balance -> {
+                                balance.setAmount(balance.getAmount() + payment.getAmount());
+                                userBalanceRepository.save(balance);
+                                return true;
+                            }).orElse(false);
+
+                }).orElse(false);
     }
 }
