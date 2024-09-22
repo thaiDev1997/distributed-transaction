@@ -28,7 +28,10 @@ public class OrderPaymetListener extends OrderListener {
         log.info(String.format("Topic: %s - Payload: %s", topic, paymentEvent));
         orderRepository
                 .findById(paymentEvent.getOrder().getOrderId())
-                .ifPresent(order -> order.setPaymentStatus(PaymentStatus.PROCESSED));
+                .ifPresent(order -> {
+                    order.setPaymentStatus(PaymentStatus.PROCESSED);
+                    kafkaTemplate.send(TopicName.DELIVERY_SCHEDULE_COMMAND, paymentEvent);
+                });
     }
 
     // require compensable action

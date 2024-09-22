@@ -21,9 +21,16 @@ import org.springframework.stereotype.Service;
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 @RequiredArgsConstructor
 @Service
-public class OrderListener {
+public class OrderListener { // TODO: here is Orchestrator
     OrderRepository orderRepository;
     KafkaTemplate<String, Object> kafkaTemplate;
+
+    @KafkaListener(topics = TopicName.ORDER_CREATED, groupId = TopicName.ORDER_CREATED + "-stock-group")
+    public void orderCreated(@Payload OrderEvent orderEvent, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+        log.info(String.format("Topic: %s - Payload: %s", topic, orderEvent));
+        // send "ReserveStock" command
+        kafkaTemplate.send(TopicName.STOCK_RESERVE_COMMAND, orderEvent);
+    }
 
     @KafkaListener(topics = TopicName.ORDER_PROCESSING, groupId = TopicName.ORDER_PROCESSING + "-notify-group")
     public void orderProcessing(@Payload OrderEvent orderEvent, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {

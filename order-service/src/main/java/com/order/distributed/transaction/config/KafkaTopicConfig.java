@@ -21,6 +21,21 @@ public class KafkaTopicConfig {
         return kafkaConfig.buildTopic(TopicName.ORDER_CREATED).build();
     }
 
+    @Bean(name = TopicName.STOCK_RESERVE_COMMAND)
+    public NewTopic stockReserveCommand() throws ExecutionException, InterruptedException {
+        return kafkaConfig.buildTopic(TopicName.STOCK_RESERVE_COMMAND).build();
+    }
+
+    @Bean(name = TopicName.PAYMENT_PROCESS_COMMAND)
+    public NewTopic paymentProcessCommand() throws ExecutionException, InterruptedException {
+        return kafkaConfig.buildTopic(TopicName.PAYMENT_PROCESS_COMMAND).build();
+    }
+
+    @Bean(name = TopicName.DELIVERY_SCHEDULE_COMMAND)
+    public NewTopic deliveryScheduleCommand() throws ExecutionException, InterruptedException {
+        return kafkaConfig.buildTopic(TopicName.DELIVERY_SCHEDULE_COMMAND).build();
+    }
+
     @Bean(name = TopicName.ORDER_CANCELLED)
     public NewTopic orderCancelled() throws ExecutionException, InterruptedException {
         return kafkaConfig.buildTopic(TopicName.ORDER_CANCELLED).build();

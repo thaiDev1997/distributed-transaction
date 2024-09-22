@@ -25,8 +25,8 @@ public class DeliveryListener {
     DeliveryService deliveryService;
     KafkaTemplate<String, Object> kafkaTemplate;
 
-    @KafkaListener(topics = TopicName.PAYMENT_PROCESSED, groupId = TopicName.PAYMENT_PROCESSED + "-delivery-group")
-    public void paymentProcessed(@Payload PaymentEvent paymentEvent, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+    @KafkaListener(topics = TopicName.DELIVERY_SCHEDULE_COMMAND, groupId = TopicName.DELIVERY_SCHEDULE_COMMAND + "-delivery-group")
+    public void deliveryScheduleCommand(@Payload PaymentEvent paymentEvent, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         log.info(String.format("Topic: %s - Payload: %s", topic, paymentEvent));
         DeliveryEvent deliveryEvent;
         try {

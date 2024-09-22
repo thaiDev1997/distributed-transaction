@@ -25,8 +25,8 @@ public class PaymentListener {
     PaymentService paymentService;
     KafkaTemplate<String, Object> kafkaTemplate;
 
-    @KafkaListener(topics = TopicName.STOCK_REVERSED, groupId = TopicName.STOCK_REVERSED + "-payment-group")
-    public void orderCreated(@Payload StockEvent stockEvent, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+    @KafkaListener(topics = TopicName.PAYMENT_PROCESS_COMMAND, groupId = TopicName.PAYMENT_PROCESS_COMMAND + "-payment-group")
+    public void paymentProcessCommand(@Payload StockEvent stockEvent, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         log.info(String.format("Topic: %s - Payload: %s", topic, stockEvent));
         PaymentEvent paymentEvent;
         try {

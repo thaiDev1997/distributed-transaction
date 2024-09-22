@@ -25,8 +25,8 @@ public class StockListener {
     ProductService productService;
     KafkaTemplate<String, Object> kafkaTemplate;
 
-    @KafkaListener(topics = TopicName.ORDER_CREATED, groupId = TopicName.ORDER_CREATED + "-stock-group")
-    public void orderCreated(@Payload OrderEvent orderEvent, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+    @KafkaListener(topics = TopicName.STOCK_RESERVE_COMMAND, groupId = TopicName.STOCK_RESERVE_COMMAND + "-stock-group")
+    public void reserveStockCommand(@Payload OrderEvent orderEvent, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         log.info(String.format("Topic: %s - Payload: %s", topic, orderEvent));
         if (OrderStatus.CREATED.equals(orderEvent.getStatus())) {
             StockEvent stockEvent;

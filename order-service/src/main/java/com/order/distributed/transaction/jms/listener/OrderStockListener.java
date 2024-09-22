@@ -28,7 +28,10 @@ public class OrderStockListener extends OrderListener {
         log.info(String.format("Topic: %s - Payload: %s", topic, stockEvent));
         orderRepository
                 .findById(stockEvent.getOrder().getOrderId())
-                .ifPresent(order -> order.setStockStatus(StockStatus.RESERVED));
+                .ifPresent(order -> {
+                    order.setStockStatus(StockStatus.RESERVED);
+                    kafkaTemplate.send(TopicName.PAYMENT_PROCESS_COMMAND, stockEvent);
+                });
     }
 
     // require compensable action
